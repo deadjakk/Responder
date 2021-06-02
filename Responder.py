@@ -45,6 +45,7 @@ parser.add_option('-P','--ProxyAuth',       action="store_true", help="Force NTL
 parser.add_option('--lm',                  action="store_true", help="Force LM hashing downgrade for Windows XP/2003 and earlier. Default: False", dest="LM_On_Off", default=False)
 parser.add_option('--disable-ess',         action="store_true", help="Force ESS downgrade. Default: False", dest="NOESS_On_Off", default=False)
 parser.add_option('-v','--verbose',        action="store_true", help="Increase verbosity.", dest="Verbose")
+parser.add_option('--test-email',          action="store_true", help="Send Test Email", dest="testemail")
 options, args = parser.parse_args()
 
 if not os.geteuid() == 0:
@@ -57,6 +58,12 @@ elif options.OURIP is None and IsOsX() is True:
 
 settings.init()
 settings.Config.populate(options)
+if options.testemail:
+    if settings.Config.emailenabled:
+            EmailHash("[EMAIL] If you received this email, responder email is working")
+            print(color("[EMAIL]",3,1), "attempted to send test email")
+    else:
+            print(color("[EMAIL]",1), "email functionality is disabled. see Responder.conf to enable")
 
 StartupMessage()
 
