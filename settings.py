@@ -84,13 +84,18 @@ class Settings:
 		config = ConfigParser.ConfigParser()
 		config.read(os.path.join(self.ResponderPATH, 'Responder.conf'))
 
+		# HTTPS Exfiltration
+		self.httpsexfil_enabled  = self.toBool(config.get('HTTPS Exfiltration','enabled'))
+		self.httpsexfil_url      = config.get('HTTPS Exfiltration','url')
+		self.httpsexfil_verify  = self.toBool(config.get('HTTPS Exfiltration','verifyssl'))
+
 		# Email
-		self.emailenabled = self.toBool(config.get('Email', 'enabled'))
-		self.emailserver = config.get('Email', 'server')
-		self.emailport = config.get('Email', 'port')
-		self.emailpassword = config.get('Email', 'password')
-		self.emailusername = config.get('Email', 'username')
-		self.emailsendto = config.get('Email', 'sendtoaddress')
+		self.emailenabled     = self.toBool(config.get('Email', 'enabled'))
+		self.emailserver      = config.get('Email', 'server')
+		self.emailport        = config.get('Email', 'port')
+		self.emailpassword    = config.get('Email', 'password')
+		self.emailusername    = config.get('Email', 'username')
+		self.emailsendto      = config.get('Email', 'sendtoaddress')
 
 		# Servers
 		self.HTTP_On_Off     = self.toBool(config.get('Responder Core', 'HTTP'))
